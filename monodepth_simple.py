@@ -30,6 +30,7 @@ parser = argparse.ArgumentParser(description='Monodepth TensorFlow implementatio
 
 parser.add_argument('--encoder',          type=str,   help='type of encoder, vgg or resnet50', default='vgg')
 parser.add_argument('--image_path',       type=str,   help='path to the image', required=True)
+parser.add_argument('--output_path',      type=str,   help='path for the output files', required=True)
 parser.add_argument('--checkpoint_path',  type=str,   help='path to a specific checkpoint to load', required=True)
 parser.add_argument('--input_height',     type=int,   help='input height', default=256)
 parser.add_argument('--input_width',      type=int,   help='input width', default=512)
@@ -83,12 +84,15 @@ def test_simple(params):
     disp = sess.run(model.disp_left_est[0], feed_dict={left: input_images})
     disp_pp = post_process_disparity(disp.squeeze()).astype(np.float32)
 
-    output_directory = os.path.dirname(args.image_path)
+    #output_directory = os.path.dirname(args.image_path)
+    output_directory = os.path.dirname(args.output_path)
     output_name = os.path.splitext(os.path.basename(args.image_path))[0]
 
-    np.save(os.path.join(output_directory, "{}_disp.npy".format(output_name)), disp_pp)
+    model_name = os.path.basename(restore_path)
+
+    np.save(os.path.join(output_directory, "{}_{}_disp.npy".format(model_name, output_name)), disp_pp)
     disp_to_img = scipy.misc.imresize(disp_pp.squeeze(), [original_height, original_width])
-    plt.imsave(os.path.join(output_directory, "{}_disp.png".format(output_name)), disp_to_img, cmap='plasma')
+    plt.imsave(os.path.join(output_directory, "{}_{}_disp.png".format(model_name, output_name)), disp_to_img, cmap='plasma')
 
     print('done!')
 
